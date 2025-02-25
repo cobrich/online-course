@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Админ-панель</h2>
+
+        <!-- Форма для добавления материалов -->
+        <h3>Добавить материал</h3>
+        <form id="addMaterialForm">
+            <input type="text" id="title" placeholder="Название" required>
+            <input type="text" id="description" placeholder="Описание" required>
+            <select id="type" required>
+                <option value="video">Видео</option>
+                <option value="image">Изображение</option>
+                <option value="text">Текст</option>
+            </select>
+            <input type="text" id="url" placeholder="URL" required>
+            <button type="submit">Добавить</button>
+        </form>
+
+        <!-- Таблица материалов -->
+        <h3>Материалы</h3>
+        <table id="materialsTable">
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Описание</th>
+                    <th>Тип</th>
+                    <th>URL</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Материалы будут загружены с сервера -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Загрузка материалов
+        async function loadMaterials() {
+            const response = await fetch('/materials');
+            const materials = await response.json();
+
+            const tbody = document.querySelector('#materialsTable tbody');
+            tbody.innerHTML = '';
+
+            materials.forEach((material) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${material.title}</td>
+                    <td>${material.description}</td>
+                    <td>${material.type}</td>
+                    <td><a href="${material.url}" target="_blank">${material.url}</a></td>
+                    <td><button onclick="deleteMaterial('${material._id}')">Удалить</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Добавление материала
+        document.getElementById('addMaterialForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                type: document.getElementById('type').value,
+                url: document.getElementById('url').value,
+            };
+
+            const response = await fetch('/upload-material', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (response.ok) {
+                alert('Материал успешно добавлен');
+                loadMaterials();
+            } else {
+                alert('Ошибка при добавлении материала');
+            }
+        });
+
+        // Удаление материала
+        async function deleteMaterial(id) {
+            const response = await fetch(`/delete-material/${id}`, { method: 'DELETE' });
+
+            if (response.ok) {
+                alert('Материал удален');
+                loadMaterials();
+            } else {
+                alert('Ошибка при удалении материала');
+            }
+        }
+
+        // Загрузка материалов при загрузке страницы
+        loadMaterials();
+    </script>
+</body>
+</html>

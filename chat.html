@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат с преподавателем</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #messages {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .sent {
+            background-color: #e3f2fd;
+            margin-left: 20%;
+            margin-right: 5px;
+        }
+        .received {
+            background-color: #f5f5f5;
+            margin-right: 20%;
+            margin-left: 5px;
+        }
+        .message-input {
+            display: flex;
+            gap: 10px;
+        }
+        #messageInput {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .nav-buttons {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Чат с преподавателем</h1>
+        <div class="nav-buttons">
+            <button onclick="window.location.href='/ask'">Задать вопрос</button>
+            <button onclick="window.location.href='/profile-page'">Профиль</button>
+            <button onclick="handleLogout()">Выйти</button>
+        </div>
+    </header>
+    <div class="container">
+        <div id="messages"></div>
+        <div class="message-input">
+            <input type="text" id="messageInput" placeholder="Введите сообщение...">
+            <button onclick="sendMessage()">Отправить</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
+        }
+
+        const socket = io({
+            auth: {
+                token: token
+            }
+        });
+
+        const messagesDiv = document.getElementById('messages');
+        let userName = '';
+
+        // Get user info
+        fetch('/profile', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            userName = data.user.name;
+        });
+
+        socket.on('messageHistory', (history) => {
+            history.forEach((msg) => {
+                addMessageToChat(msg);
+            });
+            scrollToBottom();
+        });
+
+        socket.on('newMessage', (message) => {
+            addMessageToChat(message);
+            scrollToBottom();
+        });
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (message) {
+                const messageObj = {
+                    text: message,
+                    sender: userName,
+                    timestamp: new Date().toISOString()
+                };
+                socket.emit('sendMessage', messageObj);
+                input.value = '';
+            }
+        }
+
+        function addMessageToChat(message) {
+            const messageElement = document.createElement('div');
+            const isCurrentUser = message.sender === userName;
+            
+            messageElement.className = `message ${isCurrentUser ? 'sent' : 'received'}`;
+            messageElement.innerHTML = `
+                <strong>${message.sender}</strong><br>
+                ${message.text}<br>
+                <small>${new Date(message.timestamp).toLocaleString()}</small>
+            `;
+            
+            messagesDiv.appendChild(messageElement);
+        }
+
+        function scrollToBottom() {
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Enter key to send message
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function handleLogout() {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        }
+    </script>
+</body>
+</html>

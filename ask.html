@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задать вопрос - НИШ курс</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            padding: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 10px;
+            padding: 8px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .history-container {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        .history-header h2 {
+            margin: 0;
+            color: #4CAF50;
+        }
+        .history-content {
+            display: none;
+            padding: 15px;
+        }
+        .history-content.show {
+            display: block;
+        }
+        .history-section {
+            margin-bottom: 20px;
+            background: #fff;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .history-item {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #4CAF50;
+            transition: all 0.3s ease;
+        }
+        .history-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .toggle-icon {
+            font-size: 24px;
+            transition: transform 0.3s ease;
+        }
+        .toggle-icon.rotated {
+            transform: rotate(180deg);
+        }
+        .clear-history {
+            background-color: #ff4444;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+        .clear-history:hover {
+            background-color: #cc0000;
+        }
+        .answer-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .topic-title {
+            font-size: 24px;
+            color: #2196F3;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .content-paragraph {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .box-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #1976D2;
+        }
+        
+        .example-box, .steps-box, .fun-fact-box {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        
+        .example-box {
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .steps-box {
+            border-left: 4px solid #2196F3;
+        }
+        
+        .fun-fact-box {
+            border-left: 4px solid #FF9800;
+            background: #fff3e0;
+        }
+        
+        .steps-list {
+            padding-left: 20px;
+        }
+        
+        .steps-list li {
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+        
+        .box-content {
+            padding: 10px;
+            line-height: 1.6;
+        }
+        
+        .emoji {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+
+        .media-container {
+            margin: 20px 0;
+        }
+
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .response-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .response-image:hover {
+            transform: scale(1.05);
+        }
+
+        .video-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .graph-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #2196F3;
+        }
+
+        #mathGraph {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Full screen image modal */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            margin: auto;
+            display: block;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Задайте свой вопрос</h1>
+        <div style="position: absolute; top: 20px; right: 20px;">
+            <button onclick="window.location.href='/chat'" style="margin-right: 10px;">Чат</button>
+            <button onclick="window.location.href='/profile-page'" style="margin-right: 10px;">Профиль</button>
+            <button onclick="handleLogout()">Выйти</button>
+        </div>
+    </header>
+    <div class="container">
+        <form id="askForm" onsubmit="handleQuestion(event)">
+            <textarea id="question" required placeholder="Введите ваш вопрос здесь..."></textarea>
+            <button type="submit">Отправить</button>
+        </form>
+        <div id="answer"></div>
+        
+        <div class="history-container">
+            <div class="history-header" onclick="toggleHistory()">
+                <h2>📚 История вопросов и ответов</h2>
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div class="history-content" id="historyContent">
+                <div class="history-section">
+                    <h3>🤔 Вопросы:</h3>
+                    <div id="questionHistory"></div>
+                </div>
+                <div class="history-section">
+                    <h3>💡 Ответы:</h3>
+                    <div id="answerHistory"></div>
+                </div>
+                <button class="clear-history" onclick="clearHistory()">
+                    ️ Очистить историю
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        const token = localStorage.getItem('token');
+        console.log('Retrieved token:', token);
+        if (!token) {
+            window.location.href = '/login';
+        }
+
+        // Load history when page loads
+        loadHistory();
+
+        async function loadHistory() {
+            try {
+                console.log('Sending request with token:', token);
+                const response = await fetch('/qa-history', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const history = await response.json();
+                
+                console.log('Response status:', response.status);
+                console.log('Response data:', history);
+                
+                const questionHistory = document.getElementById('questionHistory');
+                const answerHistory = document.getElementById('answerHistory');
+                
+                questionHistory.innerHTML = history.map(item => `
+                    <div class="history-item">
+                        <strong>Вопрос:</strong><br>
+                        ${item.question}
+                        <br>
+                        <small style="color: #666;">
+                            ${new Date(item.timestamp).toLocaleString()}
+                        </small>
+                    </div>
+                `).join('');
+                
+                answerHistory.innerHTML = history.map(item => `
+                    <div class="history-item">
+                        <strong>Ответ:</strong><br>
+                        ${item.answer}
+                        <br>
+                        <small style="color: #666;">
+                            ${new Date(item.timestamp).toLocaleString()}
+                        </small>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+
+        async function handleQuestion(event) {
+            event.preventDefault();
+            const question = document.getElementById('question').value;
+            
+            try {
+                console.log('Sending request with token:', token);
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ question })
+                });
+
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok) {
+                    displayAnswer(data.answer);
+                    // Reload history after new Q&A
+                    loadHistory();
+                } else {
+                    alert(data.message || 'Произошла ошибка');
+                    if (data.message === 'Необходимо войти в систему') {
+                        window.location.href = '/login';
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Произошла ошибка при отправке вопроса');
+            }
+        }
+
+        async function clearHistory() {
+            if (confirm('Вы уверены, что хотите очистить историю?')) {
+                try {
+                    console.log('Sending request with token:', token);
+                    const response = await fetch('/clear-history', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    console.log('Response status:', response.status);
+                    if (response.ok) {
+                        document.getElementById('questionHistory').innerHTML = '';
+                        document.getElementById('answerHistory').innerHTML = '';
+                        alert('История очищена');
+                    } else {
+                        alert('Ошибка при очистке истории');
+                    }
+                } catch (error) {
+                    console.error('Error clearing history:', error);
+                    alert('Ошибка при очистке истории');
+                }
+            }
+        }
+
+        // Add logout function
+        function handleLogout() {
+            // Clear the token from localStorage
+            localStorage.removeItem('token');
+            // Redirect to login page
+            window.location.href = '/login';
+        }
+
+        function displayAnswer(answer) {
+            const answerDiv = document.getElementById('answer');
+            
+            // Check if answer contains a graph request
+            const needsGraph = answer.toLowerCase().includes('график') || 
+                              answer.toLowerCase().includes('нарисуй') ||
+                              answer.toLowerCase().includes('построй');
+                              
+            // Create canvas for graph if needed
+            const graphHtml = needsGraph ? `
+                <div class="graph-box">
+                    <div class="box-header">
+                        <span class="emoji">📊</span> График
+                    </div>
+                    <canvas id="mathGraph" width="400" height="400"></canvas>
+                </div>
+            ` : '';
+
+            // Process media content (images, videos)
+            const mediaHtml = answer.media ? `
+                <div class="media-container">
+                    ${answer.media.images ? `
+                        <div class="images-box">
+                            <div class="box-header">
+                                <span class="emoji">🖼️</span> Изображения
+                            </div>
+                            <div class="image-gallery">
+                                ${answer.media.images.map(img => `
+                                    <img src="${img.url}" alt="${img.alt || 'Изображение'}" 
+                                         class="response-image" onclick="showFullImage(this.src)">
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${answer.media.videos ? `
+                        <div class="videos-box">
+                            <div class="box-header">
+                                <span class="emoji">🎥</span> Видео
+                            </div>
+                            <div class="video-gallery">
+                                ${answer.media.videos.map(video => `
+                                    <iframe width="280" height="157" 
+                                            src="https://www.youtube.com/embed/${video.id}"
+                                            frameborder="0" allowfullscreen></iframe>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            ` : '';
+
+            answerDiv.innerHTML = `
+                <div class="answer-container">
+                    <div class="topic-title">
+                        <span class="emoji">🎓</span> Давай разберемся!
+                    </div>
+                    
+                    <div class="main-content">
+                        ${formatContent(answer)}
+                    </div>
+                    
+                    ${graphHtml}
+                    ${mediaHtml}
+                    
+                    ${answer.includes('Пример:') ? createExampleBox(answer) : ''}
+                    ${answer.includes('Шаги:') || answer.includes('Давайте:') ? 
+                        createStepsBox(answer) : ''}
+                    ${answer.includes('Интересный факт:') ? createFunFactBox(answer) : ''}
+                </div>
+            `;
+
+            // If graph is needed, draw it
+            if (needsGraph) {
+                drawMathGraph();
+            }
+        }
+
+        function formatContent(text) {
+            // Remove markdown formatting
+            return text
+                .replace(/\*\*/g, '')
+                .split('\n\n')
+                .map(paragraph => {
+                    if (paragraph.includes('Example:') || 
+                        paragraph.includes('Steps:') || 
+                        paragraph.includes('Here\'s how:') || 
+                        paragraph.includes('Fun fact:')) {
+                        return '';
+                    }
+                    return `<p class="content-paragraph">${paragraph}</p>`;
+                })
+                .join('');
+        }
+
+        function createExampleBox(text) {
+            const example = text.match(/Example:[\s\S]*?(?=\n\n|$)/);
+            if (example) {
+                return `
+                    <div class="example-box">
+                        <div class="box-header">
+                            <span class="emoji">💡</span> Example
+                        </div>
+                        <div class="box-content">
+                            ${example[0].replace('Example:', '')}
+                        </div>
+                    </div>
+                `;
+            }
+            return '';
+        }
+
+        function createStepsBox(text) {
+            const steps = text.match(/(Steps:|Here's how:)[\s\S]*?(?=\n\n|$)/);
+            if (steps) {
+                const stepsList = steps[0]
+                    .replace(/(Steps:|Here's how:)/, '')
+                    .split('\n')
+                    .filter(step => step.trim())
+                    .map(step => `<li>${step.trim().replace(/^\d+\.\s*/, '')}</li>`)
+                    .join('');
+                    
+                return `
+                    <div class="steps-box">
+                        <div class="box-header">
+                            <span class="emoji">📝</span> Follow These Steps
+                        </div>
+                        <ol class="steps-list">
+                            ${stepsList}
+                        </ol>
+                    </div>
+                `;
+            }
+            return '';
+        }
+
+        function createFunFactBox(text) {
+            const funFact = text.match(/Fun fact:[\s\S]*?(?=\n\n|$)/);
+            if (funFact) {
+                return `
+                    <div class="fun-fact-box">
+                        <div class="box-header">
+                            <span class="emoji">✨</span> Fun Fact!
+                        </div>
+                        <div class="box-content">
+                            ${funFact[0].replace('Fun fact:', '')}
+                        </div>
+                    </div>
+                `;
+            }
+            return '';
+        }
+
+        function toggleHistory() {
+            const content = document.getElementById('historyContent');
+            const icon = document.querySelector('.toggle-icon');
+            content.classList.toggle('show');
+            icon.classList.toggle('rotated');
+        }
+
+        // Add function to draw mathematical graphs
+        function drawMathGraph() {
+            const canvas = document.getElementById('mathGraph');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw axes
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height/2);
+            ctx.lineTo(canvas.width, canvas.height/2);
+            ctx.moveTo(canvas.width/2, 0);
+            ctx.lineTo(canvas.width/2, canvas.height);
+            ctx.strokeStyle = '#000';
+            ctx.stroke();
+            
+            // Draw function (example: y = x²)
+            ctx.beginPath();
+            ctx.strokeStyle = '#2196F3';
+            for(let x = -10; x <= 10; x += 0.1) {
+                const y = x * x;
+                const canvasX = x * 20 + canvas.width/2;
+                const canvasY = -y * 20 + canvas.height/2;
+                
+                if(x === -10) {
+                    ctx.moveTo(canvasX, canvasY);
+                } else {
+                    ctx.lineTo(canvasX, canvasY);
+                }
+            }
+            ctx.stroke();
+        }
+
+        // Add function to show full screen images
+        function showFullImage(src) {
+            const modal = document.createElement('div');
+            modal.className = 'image-modal';
+            modal.innerHTML = `<img src="${src}" class="modal-content">`;
+            modal.onclick = () => modal.remove();
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
